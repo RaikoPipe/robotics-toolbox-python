@@ -24,6 +24,7 @@ from numpy import (
 from numpy.linalg import norm as npnorm, inv
 from spatialmath import SE3, SE2, SO3
 from spatialgeometry import Cylinder
+from spatialmath.base import q2r
 from spatialmath.base.argcheck import getvector, islistof
 from roboticstoolbox.robot.Link import Link, Link2, BaseLink
 from roboticstoolbox.robot.ETS import ETS, ETS2
@@ -48,6 +49,8 @@ from typing import Union, overload, Dict, List, Tuple, Optional
 from copy import deepcopy
 import pybullet as p
 from pyb_utils.collision import CollisionDetector
+import numpy as np
+
 
 ArrayLike = Union[list, ndarray, tuple, set]
 
