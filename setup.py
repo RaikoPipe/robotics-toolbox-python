@@ -43,6 +43,8 @@ fknm = Extension(
 setup(
     ext_modules=[frne, fknm],
     package_data={"roboticstoolbox": extra_files},
+    install_requires=["pybullet"
+                      'pyb_utils @ git+https://git@github.com/RaikoPipe/pyb_utils'],
     # scripts=[
     #     "roboticstoolbox/bin/rtbtool",
     # ],

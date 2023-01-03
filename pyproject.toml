@@ -57,7 +57,8 @@ repository = "https://github.com/petercorke/robotics-toolbox-python"
 [project.optional-dependencies]
 
 collision = [
-    "pybullet"
+    "pybullet",
+    'pyb_utils @ git+https://git@github.com/RaikoPipe/pyb_utils'
 ]
 
 dev = [
