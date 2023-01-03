@@ -22,7 +22,7 @@ from numpy import (
     dot,
 )
 from numpy.linalg import norm as npnorm, inv
-from spatialmath import SE3, SE2
+from spatialmath import SE3, SE2, SO3
 from spatialgeometry import Cylinder
 from spatialmath.base.argcheck import getvector, islistof
 from roboticstoolbox.robot.Link import Link, Link2, BaseLink
@@ -1997,8 +1997,6 @@ class ERobot(BaseERobot):
             #     col_list = collision_list[j - 1]
 
             # fixme: workaround because of problems with panda link 8 (which link even is that?)
-            if link.name == "panda_link8":
-                continue
 
             l_Ain, l_bin = indiv_calculation(link, q)
 
