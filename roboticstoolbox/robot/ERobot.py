@@ -8,6 +8,8 @@ from os.path import splitext
 import tempfile
 import subprocess
 import webbrowser
+
+import pyb_utils.collision
 from numpy import (
     array,
     ndarray,
@@ -24,7 +26,7 @@ from numpy import (
 from numpy.linalg import norm as npnorm, inv
 from spatialmath import SE3, SE2, SO3
 from spatialgeometry import Cylinder
-from spatialmath.base import q2r
+from spatialmath.base import q2r, r2q
 from spatialmath.base.argcheck import getvector, islistof
 from roboticstoolbox.robot.Link import Link, Link2, BaseLink
 from roboticstoolbox.robot.ETS import ETS, ETS2
@@ -1896,6 +1898,112 @@ class ERobot(BaseERobot):
 
         return Ain, bin
 
+    def link_collision_damper_2(
+        self,
+        collision_shape,
+        q=None,
+        di=0.3,
+        ds=0.05,
+        xi=1.0,
+        end=None,
+        start=None,
+        collision_list=None,
+        physics_client_id = 1
+    ):
+        """
+        Formulates an inequality contraint which, when optimised for will
+        make it impossible for the robot to run into a collision. Requires
+        See examples/neo.py for use case
+        :param ds: The minimum distance in which a joint is allowed to
+            approach the collision object shape
+        :type ds: float
+        :param di: The influence distance in which the velocity
+            damper becomes active
+        :type di: float
+        :param xi: The gain for the velocity damper
+        :type xi: float
+        :param from_link: The first link to consider, defaults to the base
+            link
+        :type from_link: Link
+        :param to_link: The last link to consider, will consider all links
+            between from_link and to_link in the robot, defaults to the
+            end-effector link
+        :type to_link: Link
+        :returns: Ain, Bin as the inequality contraints for an omptimisor
+        :rtype: ndarray(6), ndarray(6)
+        """
+
+        end, start, _ = self._get_limit_links(start=start, end=end)
+
+        links, n, _ = self.get_path(start=start, end=end)
+
+        # if q is None:
+        #     q = copy(self.q)
+        # else:
+        #     q = getvector(q, n)
+
+        j = 0
+        Ain = None
+        bin = None
+
+        def indiv_calculation(link, link_col, q):
+            link_col._update_pyb()
+            d, wTlp, wTcp = pyb_utils.collision.compute_distance(link_col.co, collision_shape, physics_client_id)
+
+            if d is not None:
+                lpTcp = -wTlp + wTcp
+
+                norm = lpTcp / d
+                norm_h = expand_dims(concatenate((norm, [0, 0, 0])), axis=0)
+
+                # tool = (self.fkine(q, end=link).inv() * SE3(wTlp)).A[:3, 3]
+
+                # Je = self.jacob0(q, end=link, tool=tool)
+                # Je[:3, :] = self._T[:3, :3] @ Je[:3, :]
+
+                # n_dim = Je.shape[1]
+                # dp = norm_h @ shape.v
+                # l_Ain = zeros((1, self.n))
+
+                Je = self.jacobe(q, start=self.base_link, end=link, tool=link_col.T)
+                n_dim = Je.shape[1]
+                dp = norm_h @ np.zeros(6) # no speed
+                l_Ain = zeros((1, n))
+
+                l_Ain[0, :n_dim] = norm_h @ Je
+                l_bin = (xi * (d - ds) / (di - ds)) + dp
+            else:
+                l_Ain = None
+                l_bin = None
+
+            return l_Ain, l_bin
+
+        for link in links:
+            if link.isjoint:
+                j += 1
+
+            if collision_list is None:
+                col_list = link.collision
+            else:
+                col_list = collision_list[j - 1]
+
+            for link_col in col_list:
+                l_Ain, l_bin = indiv_calculation(link, link_col, q)
+
+                if l_Ain is not None and l_bin is not None:
+                    if Ain is None:
+                        Ain = l_Ain
+                    else:
+                        Ain = concatenate((Ain, l_Ain))
+
+                    if bin is None:
+                        bin = array(l_bin)
+                    else:
+                        bin = concatenate((bin, l_bin))
+
+        return Ain, bin
+
+
     def link_collision_damper_pybullet(
         self,
         collision_object,
@@ -1974,7 +2082,7 @@ class ERobot(BaseERobot):
                                       linkIndex=collision_detector.robot_link_ids[link.name])[:2] # [:2] center of mass; [4:6] linkurdfFrame
                 link_rot:SO3 = q2r(q=rot, order="xyzs")
                 link_pose = SE3()
-                link_pose = link_pose.Rt(link_rot, tran)
+                link_pose = link_pose.Rt(link_rot, tran, check=False)
 
                 Je = self.jacobe(q, start=self.base_link, end=link, tool=link_pose)
                 n_dim = Je.shape[1]
@@ -1999,11 +2107,9 @@ class ERobot(BaseERobot):
             # else:
             #     col_list = collision_list[j - 1]
 
-            # fixme: workaround because of problems with panda link 8 (which link even is that?)
+            # apply collision
 
             l_Ain, l_bin = indiv_calculation(link, q)
-
-
 
             if l_Ain is not None and l_bin is not None:
                 if Ain is None:
