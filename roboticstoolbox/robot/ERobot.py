@@ -53,12 +53,10 @@ import pybullet as p
 from pyb_utils.collision import CollisionDetector
 import numpy as np
 
-
 ArrayLike = Union[list, ndarray, tuple, set]
 
 
 class BaseERobot(Robot):
-
     """
     Construct an ERobot object
     :param et_list: List of elementary transforms which represent the robot
@@ -686,9 +684,9 @@ class BaseERobot(Robot):
 
     @lru_cache(maxsize=32)
     def ets(
-        self,
-        start: Union[Link, Gripper, str, None] = None,
-        end: Union[Link, Gripper, str, None] = None,
+            self,
+            start: Union[Link, Gripper, str, None] = None,
+            end: Union[Link, Gripper, str, None] = None,
     ) -> ETS:
         """
         ERobot to ETS
@@ -1082,9 +1080,9 @@ graph [rankdir=LR];
         return visited
 
     def _get_limit_links(
-        self,
-        end: Union[Gripper, Link, str, None] = None,
-        start: Union[Gripper, Link, str, None] = None,
+            self,
+            end: Union[Gripper, Link, str, None] = None,
+            start: Union[Gripper, Link, str, None] = None,
     ) -> Tuple[Link, Union[Link, Gripper], Union[None, SE3]]:
         """
         Get and validate an end-effector, and a base link
@@ -1153,9 +1151,9 @@ graph [rankdir=LR];
         return end_ret, start_ret, tool
 
     def _getlink(
-        self,
-        link: Union[Link, Gripper, str, None],
-        default: Union[Link, Gripper, str, None] = None,
+            self,
+            link: Union[Link, Gripper, str, None],
+            default: Union[Link, Gripper, str, None] = None,
     ) -> Link:
         """
         Validate reference to Link
@@ -1290,9 +1288,9 @@ class ERobot(BaseERobot):
                 for j, ets_j in enumerate(arg.split()):
                     elink = Link(ETS(ets_j), parent=parent, name=f"link{j:d}")
                     if (
-                        elink.qlim is None
-                        and elink.v is not None
-                        and elink.v.qlim is not None
+                            elink.qlim is None
+                            and elink.v is not None
+                            and elink.v.qlim is not None
                     ):
                         elink.qlim = elink.v.qlim
                     parent = elink
@@ -1526,12 +1524,12 @@ class ERobot(BaseERobot):
         return path, n, tool
 
     def fkine(
-        self,
-        q: ArrayLike,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        tool: Union[ndarray, SE3, None] = None,
-        include_base: bool = True,
+            self,
+            q: ArrayLike,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            tool: Union[ndarray, SE3, None] = None,
+            include_base: bool = True,
     ) -> SE3:
         """
         Forward kinematics
@@ -1573,11 +1571,11 @@ class ERobot(BaseERobot):
         )
 
     def jacob0(
-        self,
-        q: ArrayLike,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        tool: Union[ndarray, SE3, None] = None,
+            self,
+            q: ArrayLike,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            tool: Union[ndarray, SE3, None] = None,
     ) -> ndarray:
         r"""
         Manipulator geometric Jacobian in the base frame
@@ -1616,11 +1614,11 @@ class ERobot(BaseERobot):
         return self.ets(start, end).jacob0(q, tool=tool)
 
     def jacobe(
-        self,
-        q: ArrayLike,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        tool: Union[ndarray, SE3, None] = None,
+            self,
+            q: ArrayLike,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            tool: Union[ndarray, SE3, None] = None,
     ) -> ndarray:
         r"""
         Manipulator geometric Jacobian in the end-effector frame
@@ -1658,12 +1656,12 @@ class ERobot(BaseERobot):
         return self.ets(start, end).jacobe(q, tool=tool)
 
     def hessian0(
-        self,
-        q: Union[ArrayLike, None] = None,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        J0: Union[ndarray, None] = None,
-        tool: Union[ndarray, SE3, None] = None,
+            self,
+            q: Union[ArrayLike, None] = None,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            J0: Union[ndarray, None] = None,
+            tool: Union[ndarray, SE3, None] = None,
     ) -> ndarray:
         r"""
         Manipulator Hessian
@@ -1681,9 +1679,9 @@ class ERobot(BaseERobot):
         :param J0: The manipulator Jacobian in the 0 frame
         :param tool: a static tool transformation matrix to apply to the
             end of end, defaults to None
-        
+
         :return: The manipulator Hessian in 0 frame
-        
+
         This method computes the manipulator Hessian in the base frame.  If
         we take the time derivative of the differential kinematic relationship
         .. math::
@@ -1703,7 +1701,7 @@ class ERobot(BaseERobot):
         Similarly, we can write
         .. math::
             \mat{J}_{i,j} = \frac{d u_i}{d q_j}
-        
+
         :references:
             - Kinematic Derivatives using the Elementary Transform
               Sequence, J. Haviland and P. Corke
@@ -1711,12 +1709,12 @@ class ERobot(BaseERobot):
         return self.ets(start, end).hessian0(q, J0=J0, tool=tool)
 
     def hessiane(
-        self,
-        q: Union[ArrayLike, None] = None,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        Je: Union[ndarray, None] = None,
-        tool: Union[ndarray, SE3, None] = None,
+            self,
+            q: Union[ArrayLike, None] = None,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            Je: Union[ndarray, None] = None,
+            tool: Union[ndarray, SE3, None] = None,
     ) -> ndarray:
         r"""
         Manipulator Hessian
@@ -1734,9 +1732,9 @@ class ERobot(BaseERobot):
         :param Je: The manipulator Jacobian in the ee frame
         :param tool: a static tool transformation matrix to apply to the
             end of end, defaults to None
-        
+
         :return: The manipulator Hessian in ee frame
-        
+
         This method computes the manipulator Hessian in the ee frame.  If
         we take the time derivative of the differential kinematic relationship
         .. math::
@@ -1756,7 +1754,7 @@ class ERobot(BaseERobot):
         Similarly, we can write
         .. math::
             \mat{J}_{i,j} = \frac{d u_i}{d q_j}
-        
+
         :references:
             - Kinematic Derivatives using the Elementary Transform
               Sequence, J. Haviland and P. Corke
@@ -1764,11 +1762,11 @@ class ERobot(BaseERobot):
         return self.ets(start, end).hessiane(q, Je=Je, tool=tool)
 
     def partial_fkine0(
-        self,
-        q: ArrayLike,
-        n: int = 3,
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
+            self,
+            q: ArrayLike,
+            n: int = 3,
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
     ):
         r"""
         Manipulator Forward Kinematics nth Partial Derivative
@@ -1796,15 +1794,15 @@ class ERobot(BaseERobot):
         return self.ets(start, end).partial_fkine0(q, n=n)
 
     def link_collision_damper(
-        self,
-        shape,
-        q=None,
-        di=0.3,
-        ds=0.05,
-        xi=1.0,
-        end=None,
-        start=None,
-        collision_list=None,
+            self,
+            shape,
+            q=None,
+            di=0.3,
+            ds=0.05,
+            xi=1.0,
+            end=None,
+            start=None,
+            collision_list=None,
     ):
         """
         Formulates an inequality contraint which, when optimised for will
@@ -1899,16 +1897,16 @@ class ERobot(BaseERobot):
         return Ain, bin
 
     def link_collision_damper_2(
-        self,
-        collision_shape,
-        q=None,
-        di=0.3,
-        ds=0.05,
-        xi=1.0,
-        end=None,
-        start=None,
-        collision_list=None,
-        physics_client_id = 1
+            self,
+            collision_shape,
+            q=None,
+            di=0.3,
+            ds=0.05,
+            xi=1.0,
+            end=None,
+            start=None,
+            collision_list=None,
+            physics_client_id=1
     ):
         """
         Formulates an inequality contraint which, when optimised for will
@@ -1948,7 +1946,8 @@ class ERobot(BaseERobot):
 
         def indiv_calculation(link, link_col, q):
             link_col._update_pyb()
-            d, wTlp, wTcp = pyb_utils.collision.compute_distance(link_col.co, collision_shape, physics_client_id)
+            d, wTlp, wTcp = pyb_utils.collision.compute_distance(link_col.co, collision_shape, physics_client_id,
+                                                                 max_distance=di)
 
             if d is not None:
                 lpTcp = -wTlp + wTcp
@@ -1967,7 +1966,7 @@ class ERobot(BaseERobot):
 
                 Je = self.jacobe(q, start=self.base_link, end=link, tool=link_col.T)
                 n_dim = Je.shape[1]
-                dp = norm_h @ np.zeros(6) # no speed
+                dp = norm_h @ np.zeros(6)  # no speed
                 l_Ain = zeros((1, n))
 
                 l_Ain[0, :n_dim] = norm_h @ Je
@@ -2003,140 +2002,138 @@ class ERobot(BaseERobot):
 
         return Ain, bin
 
-
-    def link_collision_damper_pybullet(
-        self,
-        collision_object,
-        collision_detector,
-        panda,
-        q=None,
-        di=0.3,
-        ds=0.05,
-        xi=1.0,
-        end=None,
-        start=None,
-        collision_list=None,
-
-    ):
-        """
-        Formulates an inequality contraint which, when optimised for will
-        make it impossible for the robot to run into a collision. (Version for panda-gym)
-        See examples/neo.py for use case
-        :param ds: The minimum distance in which a joint is allowed to
-            approach the collision object shape
-        :type ds: float
-        :param di: The influence distance in which the velocity
-            damper becomes active
-        :type di: float
-        :param xi: The gain for the velocity damper
-        :type xi: float
-        :param from_link: The first link to consider, defaults to the base
-            link
-        :type from_link: Link
-        :param to_link: The last link to consider, will consider all links
-            between from_link and to_link in the robot, defaults to the
-            end-effector link
-        :type to_link: Link
-        :returns: Ain, Bin as the inequality contraints for an omptimisor
-        :rtype: ndarray(6), ndarray(6)
-        """
-
-        # end, start, _ = self._get_limit_links(start=start, end=end)
-
-        # links, n, _ = self.get_path(start=start, end=end)
-
-        links, n, _ = self.get_path(start=start, end=end) # links, n = panda.link_names, 7
-
-        # if q is None:
-        #     q = copy(self.q)
-        # else:
-        #     q = getvector(q, n)
-
-        j = 0
-        Ain = None
-        bin = None
-
-        def indiv_calculation(link, q):
-            # todo: get name of link then perform collision detection with collision detector
-
-            d, wTlp, wTcp = collision_detector.compute_distance_of_link(link.name, collision_object) # distance to collision object, link position, obstacle position
-
-
-            if d is not None:
-                lpTcp = -wTlp + wTcp # unit vector pointing to obstacle
-
-                norm = lpTcp / d
-                norm_h = expand_dims(concatenate((norm, [0, 0, 0])), axis=0)
-
-                # tool = (self.fkine(q, end=link).inv() * SE3(wTlp)).A[:3, 3]
-
-                # Je = self.jacob0(q, end=link, tool=tool)
-                # Je[:3, :] = self._T[:3, :3] @ Je[:3, :]
-
-                # n_dim = Je.shape[1]
-                # dp = norm_h @ shape.v
-                # l_Ain = zeros((1, self.n))
-
-                # get SE3 pose of link
-                tran, rot= p.getLinkState(bodyUniqueId=collision_detector.robot_id,
-                                      linkIndex=collision_detector.robot_link_ids[link.name])[:2] # [:2] center of mass; [4:6] linkurdfFrame
-                link_rot:SO3 = q2r(q=rot, order="xyzs")
-                link_pose = SE3()
-                link_pose = link_pose.Rt(link_rot, tran, check=False)
-
-                Je = self.jacobe(q, start=self.base_link, end=link, tool=link_pose)
-                n_dim = Je.shape[1]
-
-                dp = norm_h @ np.zeros(6)
-                l_Ain = zeros((1, n))
-
-                l_Ain[0, :n_dim] = norm_h @ Je
-                l_bin = (xi * (d - ds) / (di - ds)) + dp
-            else:
-                l_Ain = None
-                l_bin = None
-
-            return l_Ain, l_bin
-
-        for link in links:
-            # if link.isjoint:
-            #     j += 1
-
-            # if collision_list is None:
-            #     col_list = link.collision
-            # else:
-            #     col_list = collision_list[j - 1]
-
-            # apply collision
-
-            l_Ain, l_bin = indiv_calculation(link, q)
-
-            if l_Ain is not None and l_bin is not None:
-                if Ain is None:
-                    Ain = l_Ain
-                else:
-                    Ain = concatenate((Ain, l_Ain))
-
-                if bin is None:
-                    bin = array(l_bin)
-                else:
-                    bin = concatenate((bin, l_bin))
-
-        return Ain, bin
-
+    # def link_collision_damper_pybullet(
+    #     self,
+    #     collision_object,
+    #     collision_detector,
+    #     panda,
+    #     q=None,
+    #     di=0.3,
+    #     ds=0.05,
+    #     xi=1.0,
+    #     end=None,
+    #     start=None,
+    #     collision_list=None,
+    #
+    # ):
+    #     """
+    #     Formulates an inequality contraint which, when optimised for will
+    #     make it impossible for the robot to run into a collision. (Version for panda-gym)
+    #     See examples/neo.py for use case
+    #     :param ds: The minimum distance in which a joint is allowed to
+    #         approach the collision object shape
+    #     :type ds: float
+    #     :param di: The influence distance in which the velocity
+    #         damper becomes active
+    #     :type di: float
+    #     :param xi: The gain for the velocity damper
+    #     :type xi: float
+    #     :param from_link: The first link to consider, defaults to the base
+    #         link
+    #     :type from_link: Link
+    #     :param to_link: The last link to consider, will consider all links
+    #         between from_link and to_link in the robot, defaults to the
+    #         end-effector link
+    #     :type to_link: Link
+    #     :returns: Ain, Bin as the inequality contraints for an omptimisor
+    #     :rtype: ndarray(6), ndarray(6)
+    #     """
+    #
+    #     # end, start, _ = self._get_limit_links(start=start, end=end)
+    #
+    #     # links, n, _ = self.get_path(start=start, end=end)
+    #
+    #     links, n, _ = self.get_path(start=start, end=end) # links, n = panda.link_names, 7
+    #
+    #     # if q is None:
+    #     #     q = copy(self.q)
+    #     # else:
+    #     #     q = getvector(q, n)
+    #
+    #     j = 0
+    #     Ain = None
+    #     bin = None
+    #
+    #     def indiv_calculation(link, q):
+    #         # todo: get name of link then perform collision detection with collision detector
+    #
+    #         d, wTlp, wTcp = collision_detector.compute_distance_of_link(link.name, collision_object) # distance to collision object, link position, obstacle position
+    #
+    #
+    #         if d is not None:
+    #             lpTcp = -wTlp + wTcp # unit vector pointing to obstacle
+    #
+    #             norm = lpTcp / d
+    #             norm_h = expand_dims(concatenate((norm, [0, 0, 0])), axis=0)
+    #
+    #             # tool = (self.fkine(q, end=link).inv() * SE3(wTlp)).A[:3, 3]
+    #
+    #             # Je = self.jacob0(q, end=link, tool=tool)
+    #             # Je[:3, :] = self._T[:3, :3] @ Je[:3, :]
+    #
+    #             # n_dim = Je.shape[1]
+    #             # dp = norm_h @ shape.v
+    #             # l_Ain = zeros((1, self.n))
+    #
+    #             # get SE3 pose of link
+    #             tran, rot= p.getLinkState(bodyUniqueId=collision_detector.robot_id,
+    #                                   linkIndex=collision_detector.robot_link_ids[link.name])[:2] # [:2] center of mass; [4:6] linkurdfFrame
+    #             link_rot:SO3 = q2r(q=rot, order="xyzs")
+    #             link_pose = SE3()
+    #             link_pose = link_pose.Rt(link_rot, tran, check=False)
+    #
+    #             Je = self.jacobe(q, start=self.base_link, end=link, tool=link_pose)
+    #             n_dim = Je.shape[1]
+    #
+    #             dp = norm_h @ np.zeros(6)
+    #             l_Ain = zeros((1, n))
+    #
+    #             l_Ain[0, :n_dim] = norm_h @ Je
+    #             l_bin = (xi * (d - ds) / (di - ds)) + dp
+    #         else:
+    #             l_Ain = None
+    #             l_bin = None
+    #
+    #         return l_Ain, l_bin
+    #
+    #     for link in links:
+    #         # if link.isjoint:
+    #         #     j += 1
+    #
+    #         # if collision_list is None:
+    #         #     col_list = link.collision
+    #         # else:
+    #         #     col_list = collision_list[j - 1]
+    #
+    #         # apply collision
+    #
+    #         l_Ain, l_bin = indiv_calculation(link, q)
+    #
+    #         if l_Ain is not None and l_bin is not None:
+    #             if Ain is None:
+    #                 Ain = l_Ain
+    #             else:
+    #                 Ain = concatenate((Ain, l_Ain))
+    #
+    #             if bin is None:
+    #                 bin = array(l_bin)
+    #             else:
+    #                 bin = concatenate((bin, l_bin))
+    #
+    #     return Ain, bin
 
     def vision_collision_damper(
-        self,
-        shape,
-        camera=None,
-        camera_n=0,
-        q=None,
-        di=0.3,
-        ds=0.05,
-        xi=1.0,
-        end=None,
-        start=None,
-        collision_list=None,
+            self,
+            shape,
+            camera=None,
+            camera_n=0,
+            q=None,
+            di=0.3,
+            ds=0.05,
+            xi=1.0,
+            end=None,
+            start=None,
+            collision_list=None,
     ):
         """
         Formulates an inequality contraint which, when optimised for will
@@ -2361,17 +2358,17 @@ class ERobot(BaseERobot):
     # --------------------------------------------------------------------- #
 
     def ik_lm_chan(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ndarray, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        reject_jl: bool = True,
-        we: Union[ndarray, None] = None,
-        λ: float = 1.0,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ndarray, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            reject_jl: bool = True,
+            we: Union[ndarray, None] = None,
+            λ: float = 1.0,
     ) -> Tuple[ndarray, int, int, int, float]:
         """
         Numerical inverse kinematics by Levenberg-Marquadt optimization (Chan's Method)
@@ -2472,17 +2469,17 @@ class ERobot(BaseERobot):
         )
 
     def ik_lm_wampler(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ndarray, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        reject_jl: bool = True,
-        we: Union[ndarray, None] = None,
-        λ: float = 1.0,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ndarray, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            reject_jl: bool = True,
+            we: Union[ndarray, None] = None,
+            λ: float = 1.0,
     ) -> Tuple[ndarray, int, int, int, float]:
         """
         Numerical inverse kinematics by Levenberg-Marquadt optimization (Wamplers's Method)
@@ -2583,17 +2580,17 @@ class ERobot(BaseERobot):
         )
 
     def ik_lm_sugihara(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ndarray, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        reject_jl: bool = True,
-        we: Union[ndarray, None] = None,
-        λ: float = 1.0,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ndarray, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            reject_jl: bool = True,
+            we: Union[ndarray, None] = None,
+            λ: float = 1.0,
     ) -> Tuple[ndarray, int, int, int, float]:
         """
         Numerical inverse kinematics by Levenberg-Marquadt optimization (Sugihara's Method)
@@ -2694,18 +2691,18 @@ class ERobot(BaseERobot):
         )
 
     def ik_nr(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ndarray, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        reject_jl: bool = True,
-        we: Union[ndarray, None] = None,
-        use_pinv: int = True,
-        pinv_damping: float = 0.0,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ndarray, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            reject_jl: bool = True,
+            we: Union[ndarray, None] = None,
+            use_pinv: int = True,
+            pinv_damping: float = 0.0,
     ) -> Tuple[ndarray, int, int, int, float]:
         """
         Numerical inverse kinematics by Levenberg-Marquadt optimization (Newton-Raphson Method)
@@ -2806,18 +2803,18 @@ class ERobot(BaseERobot):
         )
 
     def ik_gn(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ndarray, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        reject_jl: bool = True,
-        we: Union[ndarray, None] = None,
-        use_pinv: int = True,
-        pinv_damping: float = 0.0,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ndarray, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            reject_jl: bool = True,
+            we: Union[ndarray, None] = None,
+            use_pinv: int = True,
+            pinv_damping: float = 0.0,
     ) -> Tuple[ndarray, int, int, int, float]:
         """
         Numerical inverse kinematics by Levenberg-Marquadt optimization (Gauss-NewtonMethod)
@@ -2918,17 +2915,17 @@ class ERobot(BaseERobot):
         )
 
     def ikine_LM(
-        self,
-        Tep: Union[ndarray, SE3],
-        end: Union[str, Link, Gripper, None] = None,
-        start: Union[str, Link, Gripper, None] = None,
-        q0: Union[ArrayLike, None] = None,
-        ilimit: int = 30,
-        slimit: int = 100,
-        tol: float = 1e-6,
-        joint_limits: bool = False,
-        mask: Union[ArrayLike, None] = None,
-        seed: Union[int, None] = None,
+            self,
+            Tep: Union[ndarray, SE3],
+            end: Union[str, Link, Gripper, None] = None,
+            start: Union[str, Link, Gripper, None] = None,
+            q0: Union[ArrayLike, None] = None,
+            ilimit: int = 30,
+            slimit: int = 100,
+            tol: float = 1e-6,
+            joint_limits: bool = False,
+            mask: Union[ArrayLike, None] = None,
+            seed: Union[int, None] = None,
     ):
         return self.ets(start, end).ikine_LM(
             Tep=Tep,
@@ -2957,9 +2954,9 @@ class ERobot2(BaseERobot):
                 elink = Link2(ETS2(ets_j), parent=parent, name=f"link{j:d}")
                 parent = elink
                 if (
-                    elink.qlim is None
-                    and elink.v is not None
-                    and elink.v.qlim is not None
+                        elink.qlim is None
+                        and elink.v is not None
+                        and elink.v.qlim is not None
                 ):
                     elink.qlim = elink.v.qlim
                 links.append(elink)
