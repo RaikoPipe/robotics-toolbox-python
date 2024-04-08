@@ -1496,6 +1496,128 @@ class Robot(BaseRobot[Link], RobotKinematicsMixin):
 
         return Ain, bin
 
+    def link_collision_damper_pybullet(
+        self,
+        collision_object,
+        collision_detector,
+        q=None,
+        di=0.3,
+        ds=0.05,
+        xi=1.0,
+        end=None,
+        start=None,
+        collision_list=None,
+
+    ):
+        """
+        Formulates an inequality contraint which, when optimised for will
+        make it impossible for the robot to run into a collision. (Version for panda-gym)
+        See examples/neo.py for use case
+        :param ds: The minimum distance in which a joint is allowed to
+            approach the collision object shape
+        :type ds: float
+        :param di: The influence distance in which the velocity
+            damper becomes active
+        :type di: float
+        :param xi: The gain for the velocity damper
+        :type xi: float
+        :param from_link: The first link to consider, defaults to the base
+            link
+        :type from_link: Link
+        :param to_link: The last link to consider, will consider all links
+            between from_link and to_link in the robot, defaults to the
+            end-effector link
+        :type to_link: Link
+        :returns: Ain, Bin as the inequality contraints for an omptimisor
+        :rtype: ndarray(6), ndarray(6)
+        """
+
+        end, start, _ = self._get_limit_links(start=start, end=end)
+
+
+        links, n, _ = self.get_path(start=start, end=end) # links, n = panda.link_names, 7
+
+        # if q is None:
+        #     q = copy(self.q)
+        # else:
+        #     q = getvector(q, n)
+
+        j = 0
+        Ain = None
+        bin = None
+
+        def indiv_calculation(link, q):
+
+            d, wTlp, wTcp = collision_detector.compute_distance_of_link(link.name, collision_object) # distance to collision object, link position, obstacle position
+
+
+            if d is not None:
+                if d <= ds:
+                    pybullet.addUserDebugLine(wTlp, wTcp, np.array([1,0,0]), physicsClientId=0)
+                    print(link.name)
+                else:
+                    pybullet.addUserDebugLine(wTlp, wTcp, np.array([0,1,0]), physicsClientId=0)
+                lpTcp = -wTlp + wTcp # unit vector pointing to obstacle
+
+                norm = lpTcp / d
+                norm_h = expand_dims(concatenate((norm, [0, 0, 0])), axis=0)
+
+                # tool = (self.fkine(q, end=link).inv() * SE3(wTlp)).A[:3, 3]
+
+                # Je = self.jacob0(q, end=link, tool=tool)
+                # Je[:3, :] = self._T[:3, :3] @ Je[:3, :]
+
+                # n_dim = Je.shape[1]
+                # dp = norm_h @ shape.v
+                # l_Ain = zeros((1, self.n))
+
+                # get SE3 pose of link
+                tran, rot= p.getLinkState(bodyUniqueId=collision_detector.robot_id,
+                                      linkIndex=collision_detector.robot_link_ids[link.name])[:2] # [:2] center of mass; [4:6] linkurdfFrame
+                link_rot:SO3 = q2r(q=rot, order="xyzs")
+                link_pose = SE3()
+                link_pose = link_pose.Rt(link_rot, tran, check=False)
+
+                Je = self.jacobe(q, start=self.base_link, end=link, tool=link_pose)
+                n_dim = Je.shape[1]
+
+                dp = norm_h @ np.zeros(6)
+                l_Ain = zeros((1, n))
+
+                l_Ain[0, :n_dim] = norm_h @ Je
+                l_bin = (xi * (d - ds) / (di - ds)) + dp
+            else:
+                l_Ain = None
+                l_bin = None
+
+            return l_Ain, l_bin
+
+        for link in links:
+            # if link.isjoint:
+            #     j += 1
+
+            # if collision_list is None:
+            #     col_list = link.collision
+            # else:
+            #     col_list = collision_list[j - 1]
+
+            # apply collision
+
+            l_Ain, l_bin = indiv_calculation(link, q)
+
+            if l_Ain is not None and l_bin is not None:
+                if Ain is None:
+                    Ain = l_Ain
+                else:
+                    Ain = concatenate((Ain, l_Ain))
+
+                if bin is None:
+                    bin = array(l_bin)
+                else:
+                    bin = concatenate((bin, l_bin))
+
+        return Ain, bin
+
     def vision_collision_damper(
         self,
         shape: CollisionShape,
